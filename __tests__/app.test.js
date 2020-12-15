@@ -130,16 +130,7 @@ describe('recipe-lab routes', () => {
       .delete(`/api/v1/recipes/${recipe.id}`)
 
       .then(res => {
-        expect(res.body).toEqual({
-          id: expect.any(String),
-          name: 'cookies',
-          directions: [
-            'preheat oven to 375',
-            'mix ingredients',
-            'put dough on cookie sheet',
-            'bake for 10 minutes'
-          ]
-        });
+        expect(res.body).toEqual(recipe);
       });
   });
 
