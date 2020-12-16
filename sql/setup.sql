@@ -2,16 +2,16 @@ DROP TABLE IF EXISTS recipes CASCADE;
 DROP TABLE IF EXISTS logs;
 
 CREATE TABLE recipes (
-  id BIGINT GENERATED ALWAYS AS IDENTITY,
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
   directions TEXT[]
 );
 
 CREATE TABLE logs (
-  id BIGINT GENERATED ALWAYS AS IDENTITY,
-  name TEXT NOT NULL,
-  recipe_id INTEGER NOT NULL,
-  date_of_event TEXT,
-  notes TEXT,
-  rating INTEGER CHECK (rating > 0)
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  date_of_event TEXT NOT NULL,
+  notes TEXT, 
+  rating INTEGER CHECK (rating > 0),
+  recipe_id BIGINT NOT NULL REFERENCES recipes(id)
 );
+

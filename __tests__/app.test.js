@@ -3,10 +3,15 @@ const pool = require('../lib/utils/pool');
 const request = require('supertest');
 const app = require('../lib/app');
 const Recipe = require('../lib/models/Recipe');
+const Log = require('../lib/models/Log');
 
 describe('recipe-lab routes', () => {
   beforeEach(() => {
     return pool.query(fs.readFileSync('./sql/setup.sql', 'utf-8'));
+  });
+
+  afterAll(() => {
+    return pool.end();
   });
 
   it('creates a recipe', () => {
@@ -51,7 +56,7 @@ describe('recipe-lab routes', () => {
       });
   });
 
-  it('finds a single recipe by id', async () => {
+  it('finds a single recipe by id and all associated logs', async () => {
     const recipe = await Recipe.insert({
       name: 'cookies',
       directions: [
@@ -59,22 +64,31 @@ describe('recipe-lab routes', () => {
         'mix ingredients',
         'put dough on cookie sheet',
         'bake for 10 minutes'
-      ],
+      ]
     });
+
+    const logs = await Promise.all([
+      {
+        dateOfEvent: 'Dec 25, 1999',
+        notes: 'way too fussy',
+        rating: 3,
+        recipeId: recipe.id
+      },
+      {
+        dateOfEvent: 'July 4, 2020',
+        notes: 'no one here anyway',
+        rating: 1,
+        recipeId: recipe.id
+      }
+    ].map(log => Log.insert(log)));
 
     return request(app)
       .get(`/api/v1/recipes/${recipe.id}`)
 
       .then(res => {
         expect(res.body).toEqual({
-          id: expect.any(String),
-          name: 'cookies',
-          directions: [
-            'preheat oven to 375',
-            'mix ingredients',
-            'put dough on cookie sheet',
-            'bake for 10 minutes'
-          ]
+          ...recipe,
+          logs: expect.arrayContaining(logs)
         });
       });
   });
